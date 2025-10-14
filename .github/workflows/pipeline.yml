@@ -1,0 +1,55 @@
+# .github/workflows/pipeline.yml
+name: CI/CD Promotion Pipeline
+
+on:
+  push:
+    branches:
+      - build
+
+jobs:
+  build-and-promote:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # needed for pushing to other branches
+
+    steps:
+      - name: Checkout build branch
+        uses: actions/checkout@v3
+        with:
+          ref: build
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run build
+        run: npm run build
+
+      - name: Run tests (skip if none found)
+        run: npm test --if-present -- --passWithNoTests
+
+
+      - name: Promote build → test
+        if: success()
+        run: |
+          echo "Promoting build → test..."
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git fetch origin
+          git checkout test
+          git merge origin/build --no-ff -m "Auto merge from build to test"
+          git push origin test
+
+      - name: Promote test → prod
+        if: success()
+        run: |
+          echo "Promoting test → prod..."
+          git fetch origin
+          git checkout prod
+          git merge origin/test --no-ff -m "Auto merge from test to prod"
+          git push origin prod
