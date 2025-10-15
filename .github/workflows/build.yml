@@ -43,8 +43,9 @@ jobs:
 
           echo "🔄 Syncing with remote build branch..."
           git fetch origin build
+          git checkout build
           git pull origin build --rebase || echo "No remote changes to rebase."
-          git push origin build
+          git push origin HEAD:build
 
 
       # Trigger the next workflow
