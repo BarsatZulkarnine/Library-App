@@ -1,12 +1,11 @@
-name: Build Pipeline
+name: Promote Build → Test Pipeline
 
 on:
-  push:
-    branches:
-      - build
+  repository_dispatch:
+    types: [promote-to-test]
 
 jobs:
-  build:
+  promote-to-test:
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -15,6 +14,7 @@ jobs:
       - name: Checkout build branch
         uses: actions/checkout@v4
         with:
+          ref: build
           fetch-depth: 0
 
       - name: Set up Node.js
@@ -25,27 +25,35 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run build
-        run: npm run build
+      # 🧪 Smoke Test
+      - name: Run smoke test
+        run: |
+          echo "Running smoke test..."
+          npm run build
+          [ -d "build" ] && echo "✅ Smoke test passed." || exit 1
 
-      - name: Run unit tests
-        run: npm test --if-present -- --passWithNoTests
+      # 🧩 Jest Component Tests
+      - name: Run Jest component tests
+        run: |
+          echo "Running Jest tests..."
+          npm test -- --passWithNoTests
 
-      - name: Mark build successful
+      # ✅ Promote to test branch
+      - name: Promote build → test
         if: success()
         run: |
-          echo "✅ Build and basic tests passed."
+          echo "Promoting build → test..."
           git config user.name "github-actions"
           git config user.email "actions@github.com"
-          echo "Last successful build: $(date)" > build-status.txt
-          git add build-status.txt
-          git commit -m "Update build status [skip ci]" || echo "No changes to commit"
-          git push origin build
+          git fetch origin
+          git checkout test
+          git merge origin/build --no-ff -m "Auto merge from build to test [skip ci]"
+          git push origin test
 
-      # Trigger the next workflow
-      - name: Trigger Promotion to Test
+      # Trigger next stage: test → prod
+      - name: Trigger Promotion to Prod
         if: success()
         uses: peter-evans/repository-dispatch@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          event-type: promote-to-test
+          event-type: promote-to-prod
