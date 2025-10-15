@@ -25,20 +25,17 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # 🧪 Smoke Test
       - name: Run smoke test
         run: |
           echo "Running smoke test..."
           npm run build
           [ -d "build" ] && echo "✅ Smoke test passed." || exit 1
 
-      # 🧩 Jest Component Tests
       - name: Run Jest component tests
         run: |
           echo "Running Jest tests..."
           npm test -- --passWithNoTests
 
-      # ✅ Promote to test branch
       - name: Promote build → test
         if: success()
         run: |
@@ -50,7 +47,6 @@ jobs:
           git merge origin/build --no-ff -m "Auto merge from build to test [skip ci]"
           git push origin test
 
-      # Trigger next stage: test → prod
       - name: Trigger Promotion to Prod
         if: success()
         uses: peter-evans/repository-dispatch@v3

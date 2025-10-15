@@ -40,15 +40,11 @@ jobs:
           echo "Last successful build: $(date)" > build-status.txt
           git add build-status.txt
           git commit -m "Update build status [skip ci]" || echo "No changes to commit"
-
-          echo "🔄 Syncing with remote build branch..."
           git fetch origin build
           git checkout build
           git pull origin build --rebase || echo "No remote changes to rebase."
           git push origin HEAD:build
 
-
-      # Trigger the next workflow
       - name: Trigger Promotion to Test
         if: success()
         uses: peter-evans/repository-dispatch@v3
