@@ -34,13 +34,18 @@ jobs:
       - name: Mark build successful
         if: success()
         run: |
-          echo "Build and basic tests passed."
+          echo "✅ Build and basic tests passed."
           git config user.name "github-actions"
           git config user.email "actions@github.com"
           echo "Last successful build: $(date)" > build-status.txt
           git add build-status.txt
           git commit -m "Update build status [skip ci]" || echo "No changes to commit"
+
+          echo "🔄 Syncing with remote build branch..."
+          git fetch origin build
+          git pull origin build --rebase || echo "No remote changes to rebase."
           git push origin build
+
 
       # Trigger the next workflow
       - name: Trigger Promotion to Test
