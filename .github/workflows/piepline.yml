@@ -39,9 +39,9 @@ jobs:
           echo "Promoting build → test..."
           git config user.name "github-actions"
           git config user.email "actions@github.com"
-          git fetch origin '+refs/heads/*:refs/remotes/origin/*'
-          git checkout -B test origin/test
-          git merge origin/build --no-ff -m "Auto merge from build to test"
+          git fetch origin
+          git checkout test
+          git merge origin/build --no-ff -m "Auto merge from build to test [skip ci]"
           git push origin test
 
       - name: Promote test → prod
