@@ -39,10 +39,23 @@ jobs:
           echo "Promoting build → test..."
           git config user.name "github-actions"
           git config user.email "actions@github.com"
+
+          echo "🧹 Cleaning workspace..."
+          git reset --hard
+          git clean -fd
+
+          echo "🔄 Fetching branches..."
           git fetch origin
-          git checkout --track origin/test
+
+          echo "📦 Checking out test branch..."
+          git checkout -B test origin/test
+
+          echo "🔀 Merging build → test..."
           git merge origin/build --no-ff -m "Auto merge from build to test [skip ci]"
+
+          echo "🚀 Pushing to test..."
           git push origin test
+
 
       - name: Promote test → prod
         if: success()
