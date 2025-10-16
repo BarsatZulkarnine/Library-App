@@ -8,6 +8,7 @@ import { books } from "./data";
 import BookInfo from "./Pages/BookInfo";
 import Cart from "./Pages/Cart";
 import { useState } from "react";
+import { Analytics } from '@vercel/analytics/react';
 
 function App() {
   const [cart, setCart] = useState([]);
@@ -104,6 +105,7 @@ function App() {
       </div>
     </Router>
   );
+  <Analytics />
 }
 
 export default App;
