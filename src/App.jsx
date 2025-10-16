@@ -1,5 +1,5 @@
 import "./App.css";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Nav from "./components/Nav";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Home from "./Pages/Home";
@@ -7,7 +7,7 @@ import Books from "./Pages/Books";
 import { books } from "./data";
 import BookInfo from "./Pages/BookInfo";
 import Cart from "./Pages/Cart";
-import { useState } from "react";
+import { Analytics } from "@vercel/analytics/react";
 
 function App() {
   const [cart, setCart] = useState([]);
@@ -16,16 +16,11 @@ function App() {
     const dupeItem = cart.find((item) => +item.id === +book.id);
     if (dupeItem) {
       setCart(
-        cart.map((item) => {
-          if (item.id === dupeItem.id) {
-            return {
-              ...item,
-              quantity: item.quantity + 1,
-            };
-          } else {
-            return item;
-          }
-        })
+        cart.map((item) =>
+          item.id === dupeItem.id
+            ? { ...item, quantity: item.quantity + 1 }
+            : item
+        )
       );
     } else {
       setCart([...cart, { ...book, quantity: 1 }]);
@@ -34,16 +29,9 @@ function App() {
 
   function updateCart(item, newQuantity) {
     setCart((oldCart) =>
-      oldCart.map((oldItem) => {
-        if (oldItem.id === item.id) {
-          return {
-            ...oldItem,
-            quantity: newQuantity,
-          };
-        } else {
-          return oldItem;
-        }
-      })
+      oldCart.map((oldItem) =>
+        oldItem.id === item.id ? { ...oldItem, quantity: newQuantity } : oldItem
+      )
     );
   }
 
@@ -52,22 +40,18 @@ function App() {
   }
 
   function numberOfItems() {
-    let count = 0;
-    cart.forEach((item) => {
-      count += +item.quantity;
-    });
-    return count;
+    return cart.reduce((count, item) => count + +item.quantity, 0);
   }
-  
+
   useEffect(() => {
     console.log(cart);
   }, [cart]);
 
   function calcPrices() {
-    let total = 0;
-    cart.forEach((item) => {
-      total += (item.salePrice || item.originalPrice) * item.quantity;
-    });
+    let total = cart.reduce(
+      (sum, item) => sum + (item.salePrice || item.originalPrice) * item.quantity,
+      0
+    );
     return {
       subtotal: (total * 0.9).toFixed(2),
       tax: (total * 0.1).toFixed(2),
@@ -80,19 +64,16 @@ function App() {
       <div className="App">
         <Nav numberOfItems={numberOfItems()} />
         <Routes>
-          <Route path="/" exact element={<Home />} />
-          <Route path="/books" exact element={<Books books={books} />} />
+          <Route path="/" element={<Home />} />
+          <Route path="/books" element={<Books books={books} />} />
           <Route
             path="/books/:id"
-            element={
-              <BookInfo books={books} addToCart={addToCart} cart={cart} />
-            }
+            element={<BookInfo books={books} addToCart={addToCart} cart={cart} />}
           />
           <Route
             path="/cart"
             element={
               <Cart
-             
                 cart={cart}
                 updateCart={updateCart}
                 totals={calcPrices()}
@@ -101,6 +82,7 @@ function App() {
             }
           />
         </Routes>
+        <Analytics />
       </div>
     </Router>
   );
