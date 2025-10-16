@@ -33,23 +33,22 @@ jobs:
       - name: Run tests (skip if none found)
         run: npm test --if-present -- --passWithNoTests
 
-
       - name: Promote build → test
         if: success()
         run: |
           echo "Promoting build → test..."
           git config user.name "github-actions"
           git config user.email "actions@github.com"
-          git fetch origin
-          git checkout test
+          git fetch origin '+refs/heads/*:refs/remotes/origin/*'
+          git checkout -B test origin/test
           git merge origin/build --no-ff -m "Auto merge from build to test"
           git push origin test
 
       - name: Promote test → prod
         if: success()
         run: |
-          echo "Promoting test → prod..."
-          git fetch origin
-          git checkout prod
+          echo "Promoting test → main..."
+          git fetch origin '+refs/heads/*:refs/remotes/origin/*'
+          git checkout -B main origin/main
           git merge origin/test --no-ff -m "Auto merge from test to prod"
-          git push origin prod
+          git push origin main
