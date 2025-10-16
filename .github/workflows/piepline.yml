@@ -40,7 +40,7 @@ jobs:
           git config user.name "github-actions"
           git config user.email "actions@github.com"
           git fetch origin
-          git checkout test
+          git checkout --track origin/test
           git merge origin/build --no-ff -m "Auto merge from build to test [skip ci]"
           git push origin test
 
