@@ -1,4 +1,3 @@
-# .github/workflows/pipeline.yml
 name: CI/CD Promotion Pipeline
 
 on:
@@ -10,7 +9,7 @@ jobs:
   build-and-promote:
     runs-on: ubuntu-latest
     permissions:
-      contents: write   # needed for pushing to other branches
+      contents: write
 
     steps:
       - name: Checkout build branch
@@ -27,10 +26,7 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Run build
-        run: npm run build
-
-      - name: Run tests (skip if none found)
+      - name: Run tests on build branch
         run: npm test --if-present -- --passWithNoTests
 
       - name: Promote build → test
@@ -39,29 +35,33 @@ jobs:
           echo "Promoting build → test..."
           git config user.name "github-actions"
           git config user.email "actions@github.com"
-
-          echo "🧹 Cleaning workspace..."
-          git reset --hard
-          git clean -fd
-
-          echo "🔄 Fetching branches..."
           git fetch origin
-
-          echo "📦 Checking out test branch..."
           git checkout -B test origin/test
-
-          echo "🔀 Merging build → test..."
           git merge origin/build --no-ff -m "Auto merge from build to test [skip ci]"
-
-          echo "🚀 Pushing to test..."
           git push origin test
 
+      - name: Checkout test branch for testing
+        if: success()
+        uses: actions/checkout@v3
+        with:
+          ref: test
+          fetch-depth: 0
 
-      - name: Promote test → prod
+      - name: Install dependencies on test branch
+        if: success()
+        run: npm install
+
+      - name: Run tests on test branch
+        if: success()
+        run: npm test --if-present -- --passWithNoTests
+
+      - name: Promote test → main
         if: success()
         run: |
-          echo "Promoting test → main..."
+          echo "Tests passed on test branch, promoting to main..."
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
           git fetch origin '+refs/heads/*:refs/remotes/origin/*'
           git checkout -B main origin/main
-          git merge origin/test --no-ff -m "Auto merge from test to prod"
+          git merge origin/test --no-ff -m "Auto merge from test to main [skip ci]"
           git push origin main
