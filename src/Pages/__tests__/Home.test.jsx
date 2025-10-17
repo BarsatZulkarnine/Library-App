@@ -2,7 +2,6 @@ import { render } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import Home from '../Home';
 
-// Mock the child components since we're only testing component composition
 jest.mock('../../components/Landing page', () => () => <div data-testid="landing" />);
 jest.mock('../../components/Highlights', () => () => <div data-testid="highlights" />);
 jest.mock('../../components/Featured', () => () => <div data-testid="featured" />);
@@ -18,7 +17,6 @@ describe('Home component', () => {
       </BrowserRouter>
     );
     
-    // Check that all components are rendered
     expect(getByTestId('landing')).toBeInTheDocument();
     expect(getByTestId('highlights')).toBeInTheDocument();
     expect(getByTestId('featured')).toBeInTheDocument();
