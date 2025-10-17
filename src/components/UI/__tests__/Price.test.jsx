@@ -9,7 +9,7 @@ describe('Price component', () => {
 
   test('renders both prices when sale price exists', () => {
     render(<Price originalPrice={29.99} salePrice={19.99} />);
-    expect(screen.getByText('$39.99')).toBeInTheDocument();
+    expect(screen.getByText('$29.99')).toBeInTheDocument();
     expect(screen.getByText('$19.99')).toBeInTheDocument();
   });
 });
