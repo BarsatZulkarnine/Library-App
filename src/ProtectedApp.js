@@ -5,6 +5,10 @@ function ProtectedApp({ children }) {
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [password, setPassword] = useState("");
 
+  console.log("🔍 Branch:", branch);
+  console.log("🔍 Environment:", process.env.NODE_ENV);
+  console.log("🔍 Preview Password (should be hidden in console):", process.env.REACT_APP_PREVIEW_PASSWORD ? "Set ✅" : "Missing ❌");
+
   if (process.env.NODE_ENV === "development") {
     return <>{children}</>;
   }
