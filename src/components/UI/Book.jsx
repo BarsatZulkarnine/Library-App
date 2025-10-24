@@ -16,6 +16,7 @@ const Book = ({ book }) => {
     };
   });
 
+  
   return (
     <div className="book">
       {img ? (
